@@ -2,8 +2,52 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useProduct, useProducts, useProductsLoading, useProductsError, useFetchProducts } from '../../../stores/useProductStore';
+
+// Product Image component with error handling
+function ProductImage({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
+  const [imgError, setImgError] = useState(false);
+  const [imgSrc, setImgSrc] = useState(src);
+
+  useEffect(() => {
+    setImgError(false);
+    setImgSrc(src);
+  }, [src]);
+
+  if (imgError) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-zinc-200 dark:bg-zinc-700">
+        <svg
+          className="h-16 w-16 text-zinc-400 dark:text-zinc-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      className="object-contain p-8"
+      priority={priority}
+      sizes="(max-width: 768px) 100vw, 50vw"
+      onError={() => setImgError(true)}
+      unoptimized
+    />
+  );
+}
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -83,14 +127,7 @@ export default function ProductDetailPage() {
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Large Image */}
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-white dark:bg-zinc-900">
-            <Image
-              src={product.image}
-              alt={product.title}
-              fill
-              className="object-contain p-8"
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+            <ProductImage src={product.image} alt={product.title} priority />
           </div>
 
           {/* Product Info */}

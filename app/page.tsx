@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useProducts, useProductsLoading, useProductsError, useFetchProducts } from '../stores/useProductStore';
 
 // Product Image component with error handling
@@ -82,12 +82,34 @@ export default function Home() {
   const error = useProductsError();
   const fetchProducts = useFetchProducts();
 
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+
   useEffect(() => {
     // Fetch products on mount if not already loaded
     if (products.length === 0 && !isLoading) {
       fetchProducts();
     }
   }, [products.length, isLoading, fetchProducts]);
+
+  // Extract unique categories
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map((p) => p.category)));
+    return uniqueCategories.sort();
+  }, [products]);
+
+  // Filter products based on search query and category
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchesSearch =
+        searchQuery === '' ||
+        product.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === '' || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, selectedCategory]);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
@@ -101,6 +123,53 @@ export default function Home() {
             Browse our collection of products
           </p>
         </div>
+
+        {/* Filters */}
+        {!isLoading && products.length > 0 && (
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg
+                  className="h-5 w-5 text-zinc-400 dark:text-zinc-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                className="w-full rounded-lg border border-black/8 bg-white px-4 py-2.5 pl-10 text-base text-black placeholder-zinc-400 transition-colors focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/10 dark:border-white/14 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:border-white/30 dark:focus:ring-white/10"
+              />
+            </div>
+
+            {/* Category Dropdown */}
+            <div className="sm:w-64">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full rounded-lg border border-black/8 bg-white px-4 py-2.5 text-base text-black transition-colors focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/10 dark:border-white/14 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-white/30 dark:focus:ring-white/10"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* Loading State with Skeletons */}
         {isLoading && products.length === 0 && (
@@ -162,8 +231,10 @@ export default function Home() {
 
         {/* Product Grid */}
         {!isLoading && products.length > 0 && (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
+          <>
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredProducts.map((product) => (
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}
@@ -176,33 +247,58 @@ export default function Home() {
 
                 {/* Product Info */}
                 <div className="p-4">
-                  {/* Category */}
-                  <div className="mb-1 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    {product.category}
-                  </div>
-
                   {/* Title */}
                   <h2 className="mb-2 line-clamp-2 text-base font-semibold leading-tight text-black dark:text-zinc-50">
                     {product.title}
                   </h2>
 
                   {/* Price */}
-                  <div className="text-xl font-semibold text-black dark:text-zinc-50">
+                  <div className="mb-2 text-xl font-semibold text-black dark:text-zinc-50">
                     ${product.price.toFixed(2)}
                   </div>
 
-                  {/* Rating */}
-                  {product.rating && (
-                    <div className="mt-2 flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400">
-                      <span>★</span>
-                      <span className="font-medium">{product.rating.rate}</span>
-                      <span className="text-zinc-400">({product.rating.count})</span>
-                    </div>
-                  )}
+                  {/* Category */}
+                  <div className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    {product.category}
+                  </div>
                 </div>
               </Link>
-            ))}
-          </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex min-h-[400px] items-center justify-center">
+                <div className="text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-500 mb-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <p className="text-lg text-zinc-600 dark:text-zinc-400">
+                    No products found matching your filters
+                  </p>
+                  {(searchQuery || selectedCategory) && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedCategory('');
+                      }}
+                      className="mt-4 text-sm text-zinc-500 underline hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Empty State */}
