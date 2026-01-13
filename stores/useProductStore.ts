@@ -82,15 +82,22 @@ export const useProductStore = create<ProductStore>((set, get) => ({
 // Convenience hooks for more ergonomic access
 
 /**
- * Returns the full product list and loading/error flags.
- * Usage: const { products, isLoading, error } = useProducts();
+ * Returns the full product list.
+ * Usage: const products = useProducts();
  */
-export const useProducts = () =>
-  useProductStore((state) => ({
-    products: state.products,
-    isLoading: state.isLoading,
-    error: state.error,
-  }));
+export const useProducts = () => useProductStore((state) => state.products);
+
+/**
+ * Returns the loading state.
+ * Usage: const isLoading = useProductsLoading();
+ */
+export const useProductsLoading = () => useProductStore((state) => state.isLoading);
+
+/**
+ * Returns the error state.
+ * Usage: const error = useProductsError();
+ */
+export const useProductsError = () => useProductStore((state) => state.error);
 
 /**
  * Returns a single product by ID (or currently selected one if no id is passed).
@@ -106,14 +113,11 @@ export const useProduct = (id?: number) =>
 
 /**
  * Returns CRUD helpers for products without subscribing to product list changes.
- * Usage: const { fetchProducts, upsertProduct, removeProduct } = useProductActions();
+ * Usage: const fetchProducts = useFetchProducts();
  */
-export const useProductActions = () =>
-  useProductStore((state) => ({
-    fetchProducts: state.fetchProducts,
-    upsertProduct: state.upsertProduct,
-    removeProduct: state.removeProduct,
-    clearProducts: state.clearProducts,
-    selectProduct: state.selectProduct,
-  }));
+export const useFetchProducts = () => useProductStore((state) => state.fetchProducts);
+export const useUpsertProduct = () => useProductStore((state) => state.upsertProduct);
+export const useRemoveProduct = () => useProductStore((state) => state.removeProduct);
+export const useClearProducts = () => useProductStore((state) => state.clearProducts);
+export const useSelectProduct = () => useProductStore((state) => state.selectProduct);
 
