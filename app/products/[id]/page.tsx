@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useProduct, useProducts, useProductsLoading, useProductsError, useFetchProducts } from '../../../stores/useProductStore';
+import FavoriteButton from '../../components/FavoriteButton';
 
 // Product Image component with error handling
 function ProductImage({ src, alt, priority = false }: { src: string; alt: string; priority?: boolean }) {
@@ -156,10 +157,13 @@ export default function ProductDetailPage() {
               {product.category}
             </div>
 
-            {/* Title */}
-            <h1 className="text-4xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50 sm:text-5xl">
-              {product.title}
-            </h1>
+            {/* Title with Favorite Button */}
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50 sm:text-5xl flex-1">
+                {product.title}
+              </h1>
+              <FavoriteButton productId={product.id} />
+            </div>
 
             {/* Price */}
             <div className="text-3xl font-semibold text-black dark:text-zinc-50">

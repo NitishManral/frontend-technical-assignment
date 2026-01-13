@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { useProducts, useProductsLoading, useProductsError, useFetchProducts } from '../stores/useProductStore';
+import { useIsFavorite } from '../stores/useFavoritesStore';
+import FavoriteButton from './components/FavoriteButton';
 
 // Product Image component with error handling
 function ProductImage({ src, alt }: { src: string; alt: string }) {
@@ -85,6 +87,8 @@ export default function Home() {
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const isFavorite = useIsFavorite();
 
   useEffect(() => {
     // Fetch products on mount if not already loaded
@@ -99,7 +103,7 @@ export default function Home() {
     return uniqueCategories.sort();
   }, [products]);
 
-  // Filter products based on search query and category
+  // Filter products based on search query, category, and favorites
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch =
@@ -107,9 +111,11 @@ export default function Home() {
         product.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory =
         selectedCategory === '' || product.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesFavorites =
+        !showFavoritesOnly || isFavorite(product.id);
+      return matchesSearch && matchesCategory && matchesFavorites;
     });
-  }, [products, searchQuery, selectedCategory]);
+  }, [products, searchQuery, selectedCategory, showFavoritesOnly, isFavorite]);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
@@ -167,6 +173,21 @@ export default function Home() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Favorites Filter Toggle */}
+            <div className="flex items-center">
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-black/8 bg-white px-4 py-2.5 transition-colors hover:bg-black/4 dark:border-white/14 dark:bg-zinc-900 dark:hover:bg-[#1a1a1a]">
+                <input
+                  type="checkbox"
+                  checked={showFavoritesOnly}
+                  onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+                  className="h-4 w-4 rounded border-black/8 text-red-500 focus:ring-2 focus:ring-black/10 dark:border-white/14 dark:focus:ring-white/10"
+                />
+                <span className="text-base text-black dark:text-zinc-50">
+                  Favorites Only
+                </span>
+              </label>
             </div>
           </div>
         )}
@@ -240,6 +261,11 @@ export default function Home() {
                 href={`/products/${product.id}`}
                 className="group relative overflow-hidden rounded-2xl bg-white transition-all hover:shadow-lg dark:bg-zinc-900 dark:hover:shadow-zinc-800/50"
               >
+                {/* Favorite Button */}
+                <div className="absolute right-2 top-2 z-10">
+                  <FavoriteButton productId={product.id} />
+                </div>
+
                 {/* Product Image */}
                 <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                   <ProductImage src={product.image} alt={product.title} />
@@ -284,11 +310,12 @@ export default function Home() {
                   <p className="text-lg text-zinc-600 dark:text-zinc-400">
                     No products found matching your filters
                   </p>
-                  {(searchQuery || selectedCategory) && (
+                  {(searchQuery || selectedCategory || showFavoritesOnly) && (
                     <button
                       onClick={() => {
                         setSearchQuery('');
                         setSelectedCategory('');
+                        setShowFavoritesOnly(false);
                       }}
                       className="mt-4 text-sm text-zinc-500 underline hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
                     >

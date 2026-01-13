@@ -7,6 +7,14 @@ export {
   useProduct,
   useProductActions,
 } from './useProductStore';
+export {
+  useFavoritesStore,
+  useFavorites,
+  useToggleFavorite,
+  useIsFavorite,
+  useIsProductFavorite,
+  useClearFavorites,
+} from './useFavoritesStore';
 
 export type {
   User,
