@@ -70,9 +70,28 @@ export default function ProductDetailPage() {
   // Handle loading state
   if (isLoading && !product) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-        <div className="text-center">
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">Loading product...</p>
+      <div className="min-h-screen bg-zinc-50 dark:bg-black">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-6 h-6 w-20 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Image skeleton */}
+            <div className="aspect-square w-full animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800" />
+            {/* Content skeleton */}
+            <div className="flex flex-col justify-center space-y-6">
+              <div className="h-4 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+              <div className="space-y-2">
+                <div className="h-12 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-12 w-3/4 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+              </div>
+              <div className="h-10 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+              <div className="space-y-2">
+                <div className="h-6 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-4 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-4 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
