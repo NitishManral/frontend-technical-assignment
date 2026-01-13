@@ -5,7 +5,6 @@ export {
   useProductStore,
   useProducts,
   useProduct,
-  useProductActions,
 } from './useProductStore';
 export {
   useFavoritesStore,
