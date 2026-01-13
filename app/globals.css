@@ -3,8 +3,11 @@
 /* 
   Apple-inspired design system
   - Centralized as CSS variables so Tailwind (@theme inline) can expose tokens
-  - Light / dark handled via prefers-color-scheme
+  - Light / dark handled via class-based dark mode
 */
+
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   /* Base background + surface */
@@ -71,8 +74,14 @@
   --foreground: var(--color-text-primary);
 }
 
+/* Dark mode support - both class-based (for Tailwind) and media query (for system preference) */
+.dark {
+  --background: var(--color-bg-primary-dark);
+  --foreground: var(--color-text-on-dark);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.dark):not(.light) {
     --background: var(--color-bg-primary-dark);
     --foreground: var(--color-text-on-dark);
   }
