@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useProduct, useProducts, useProductsLoading, useProductsError, useFetchProducts } from '../../../stores/useProductStore';
 import FavoriteButton from '../../components/FavoriteButton';
 
@@ -60,6 +60,7 @@ export default function ProductDetailPage() {
   const error = useProductsError();
   const product = useProduct(productId ?? undefined);
   const fetchProducts = useFetchProducts();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     // Fetch products if not already loaded
@@ -67,6 +68,20 @@ export default function ProductDetailPage() {
       fetchProducts();
     }
   }, [products.length, isLoading, fetchProducts]);
+
+  // Trigger animation when product is loaded
+  useEffect(() => {
+    if (product && !isLoading) {
+      // Reset and trigger animation
+      setIsMounted(false);
+      // Use double RAF for smooth animation start
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsMounted(true);
+        });
+      });
+    }
+  }, [product, isLoading, productId]);
 
   // Handle loading state
   if (isLoading && !product) {
@@ -138,7 +153,7 @@ export default function ProductDetailPage() {
         {/* Back button */}
         <button
           onClick={() => router.back()}
-          className="mb-6 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          className="mb-6 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-opacity duration-500"
         >
           ← Back
         </button>
@@ -146,12 +161,27 @@ export default function ProductDetailPage() {
         {/* Product Details */}
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Large Image */}
-          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-white dark:bg-zinc-900">
+          <div
+            className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 transition-all duration-700 ease-out ${
+              isMounted ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
+            }`}
+            style={{
+              transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
             <ProductImage src={product.image} alt={product.title} priority />
           </div>
 
           {/* Product Info */}
-          <div className="flex flex-col justify-center space-y-6">
+          <div
+            className={`flex flex-col justify-center space-y-6 transition-all duration-700 ease-out ${
+              isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+            style={{
+              transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+              transitionDelay: '100ms',
+            }}
+          >
             {/* Category */}
             <div className="text-sm font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               {product.category}
